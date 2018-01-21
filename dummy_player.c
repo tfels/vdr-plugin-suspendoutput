@@ -11,7 +11,7 @@
 #include "dummy_player.h"
 #include "timer.h"
 
-#ifndef STILLPICTURE_INTERVAL 
+#ifndef STILLPICTURE_INTERVAL
 # define STILLPICTURE_INTERVAL (5*1000)   // 5 sec
 #endif
 
@@ -30,9 +30,9 @@ class cDummyPlayer : public cPlayer {
     virtual void Activate(bool On)
     {
       if(On) {
-	TimerHandler();
-        CreateTimerEvent(this, &cDummyPlayer::TimerHandler, 
-			 STILLPICTURE_INTERVAL);
+        TimerHandler();
+        CreateTimerEvent(this, &cDummyPlayer::TimerHandler,
+                         STILLPICTURE_INTERVAL);
       } else {
         CancelTimerEvents(this);
       }
@@ -40,9 +40,9 @@ class cDummyPlayer : public cPlayer {
     bool TimerHandler(void)
     {
       if(! cDummyPlayerControl::UseBlankImage)
-	DeviceStillPicture(v_mpg_vdrlogo, v_mpg_vdrlogo_length);
+        DeviceStillPicture(v_mpg_vdrlogo, v_mpg_vdrlogo_length);
       else
-	DeviceStillPicture(v_mpg_black, v_mpg_black_length);
+        DeviceStillPicture(v_mpg_black, v_mpg_black_length);
       //DeviceStillPicture(v_mpg_nosignal, v_mpg_nosignal_length);
       return true;
     }

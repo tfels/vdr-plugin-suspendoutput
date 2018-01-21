@@ -17,9 +17,9 @@ class cTimerCallback {
 
     virtual void *TargetId() { return (void*)this; }
     virtual int   size()     { return sizeof(*this); }
-    virtual bool  is(void *data, int len) 
-    { 
-      return len==sizeof(*this) && TargetId()==data; 
+    virtual bool  is(void *data, int len)
+    {
+      return len==sizeof(*this) && TargetId()==data;
     }
 
     friend class cTimerThread;
@@ -56,19 +56,19 @@ class cTimerEvent : protected cTimerCallback {
 // make gcc 3.4.5 happy
 //
 template<class TCLASS, class TRESULT>
-cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(void), 
-			      unsigned int TimeoutMs);
+cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(void),
+                              unsigned int TimeoutMs);
 template<class TCLASS, class TRESULT, class TARG1>
-cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(TARG1), 
-			      TARG1 arg1, 
-			      unsigned int TimeoutMs);
+cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(TARG1),
+                              TARG1 arg1,
+                              unsigned int TimeoutMs);
 template<class TCLASS>
-cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(void), 
-			      unsigned int TimeoutMs, bool runOnce = true);
+cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(void),
+                              unsigned int TimeoutMs, bool runOnce = true);
 template<class TCLASS, class TARG1>
-cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(TARG1), 
-			      TARG1 arg1, 
-			      unsigned int TimeoutMs, bool runOnce = true);
+cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(TARG1),
+                              TARG1 arg1,
+                              unsigned int TimeoutMs, bool runOnce = true);
 
 //
 // Timer event templates
@@ -83,23 +83,23 @@ class cTimerFunctorR0 : public cTimerEvent {
     typedef TRESULT (TCLASS::*TFUNC)(void);
 
     cTimerFunctorR0(TCLASS *obj, TFUNC f, unsigned int TimeoutMs) :
-      m_obj(obj), m_f(f) 
-    { 
-      AddEvent(TimeoutMs); 
+      m_obj(obj), m_f(f)
+    {
+      AddEvent(TimeoutMs);
     }
 
     virtual ~cTimerFunctorR0() {};
 
     virtual bool TimerEvent(void)
-    { 
-      return (*m_obj.*m_f)(); 
+    {
+      return (*m_obj.*m_f)();
     }
 
     virtual void *TargetId() { return (void*)m_obj; }
     virtual int   size()     { return sizeof(*this); }
-    virtual bool  is(void *data, int len) 
-    { 
-      return sizeof(*this)==len && !memcmp(this,data,len); 
+    virtual bool  is(void *data, int len)
+    {
+      return sizeof(*this)==len && !memcmp(this,data,len);
     }
 
   private:
@@ -118,23 +118,23 @@ class cTimerFunctorR1 : public cTimerEvent {
     typedef TRESULT (TCLASS::*TFUNC)(TARG1);
 
     cTimerFunctorR1(TCLASS *obj, TFUNC f, TARG1 arg1, unsigned int TimeoutMs) :
-      m_obj(obj), m_f(f), m_arg1(arg1) 
-    { 
-      AddEvent(TimeoutMs); 
+      m_obj(obj), m_f(f), m_arg1(arg1)
+    {
+      AddEvent(TimeoutMs);
     }
 
     virtual ~cTimerFunctorR1() {};
 
     virtual bool TimerEvent(void)
     {
-      return (*m_obj.*m_f)(m_arg1); 
+      return (*m_obj.*m_f)(m_arg1);
     }
 
     virtual void *TargetId() { return (void*)m_obj; }
     virtual int   size()     { return sizeof(*this); }
-    virtual bool  is(void *data, int len) 
-    { 
-      return sizeof(*this)==len && !memcmp(this,data,len); 
+    virtual bool  is(void *data, int len)
+    {
+      return sizeof(*this)==len && !memcmp(this,data,len);
     }
 
   private:
@@ -153,26 +153,26 @@ class cTimerFunctor0 : public cTimerEvent {
   protected:
     typedef void (TCLASS::*TFUNC)(void);
 
-    cTimerFunctor0(TCLASS *obj, TFUNC f, 
-		   unsigned int TimeoutMs, bool runOnce) :
-      m_obj(obj), m_f(f), m_runAgain(!runOnce) 
-    { 
-      AddEvent(TimeoutMs); 
+    cTimerFunctor0(TCLASS *obj, TFUNC f,
+                   unsigned int TimeoutMs, bool runOnce) :
+      m_obj(obj), m_f(f), m_runAgain(!runOnce)
+    {
+      AddEvent(TimeoutMs);
     }
 
     virtual ~cTimerFunctor0() {};
 
     virtual bool TimerEvent(void)
-    { 
-      (*m_obj.*m_f)(); 
-      return m_runAgain; 
+    {
+      (*m_obj.*m_f)();
+      return m_runAgain;
     }
 
     virtual void *TargetId() { return (void*)m_obj; }
     virtual int   size()     { return sizeof(*this); }
-    virtual bool  is(void *data, int len) 
-    { 
-      return sizeof(*this)==len && !memcmp(this,data,len); 
+    virtual bool  is(void *data, int len)
+    {
+      return sizeof(*this)==len && !memcmp(this,data,len);
     }
 
   private:
@@ -191,26 +191,26 @@ class cTimerFunctor1 : public cTimerEvent {
   protected:
     typedef void (TCLASS::*TFUNC)(TARG1);
 
-    cTimerFunctor1(TCLASS *obj, TFUNC f, TARG1 arg1, 
-		   unsigned int TimeoutMs, bool runOnce) :
-      m_obj(obj), m_f(f), m_arg1(arg1), m_runAgain(!runOnce) 
-    { 
-      AddEvent(TimeoutMs); 
+    cTimerFunctor1(TCLASS *obj, TFUNC f, TARG1 arg1,
+                   unsigned int TimeoutMs, bool runOnce) :
+      m_obj(obj), m_f(f), m_arg1(arg1), m_runAgain(!runOnce)
+    {
+      AddEvent(TimeoutMs);
     }
 
     virtual ~cTimerFunctor1() {};
 
     virtual bool TimerEvent(void)
-    { 
-      (*m_obj.*m_f)(m_arg1); 
-      return m_runAgain; 
+    {
+      (*m_obj.*m_f)(m_arg1);
+      return m_runAgain;
     }
 
     virtual void *TargetId() { return (void*)m_obj; }
     virtual int   size()     { return sizeof(*this); }
-    virtual bool  is(void *data, int len) 
-    { 
-      return sizeof(*this)==len && !memcmp(this,data,len); 
+    virtual bool  is(void *data, int len)
+    {
+      return sizeof(*this)==len && !memcmp(this,data,len);
     }
 
   private:
@@ -227,39 +227,39 @@ class cTimerFunctor1 : public cTimerEvent {
 //
 
 template<class TCLASS, class TRESULT>
-cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(void), 
-			      unsigned int TimeoutMs)
-{ 
-  return new cTimerFunctorR0<TCLASS,TRESULT>(c,fp,TimeoutMs); 
+cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(void),
+                              unsigned int TimeoutMs)
+{
+  return new cTimerFunctorR0<TCLASS,TRESULT>(c,fp,TimeoutMs);
 }
 
 template<class TCLASS, class TRESULT, class TARG1>
-cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(TARG1), 
-			      TARG1 arg1, 
-			      unsigned int TimeoutMs)
-{ 
-  return new cTimerFunctorR1<TCLASS,TRESULT,TARG1>(c,fp,arg1,TimeoutMs); 
+cTimerEvent *CreateTimerEvent(TCLASS *c, TRESULT (TCLASS::*fp)(TARG1),
+                              TARG1 arg1,
+                              unsigned int TimeoutMs)
+{
+  return new cTimerFunctorR1<TCLASS,TRESULT,TARG1>(c,fp,arg1,TimeoutMs);
 }
 
 template<class TCLASS>
-cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(void), 
-			      unsigned int TimeoutMs, bool runOnce = true)
-{ 
-  return new cTimerFunctor0<TCLASS>(c,fp,TimeoutMs,runOnce); 
+cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(void),
+                              unsigned int TimeoutMs, bool runOnce = true)
+{
+  return new cTimerFunctor0<TCLASS>(c,fp,TimeoutMs,runOnce);
 }
 
 template<class TCLASS, class TARG1>
-cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(TARG1), 
-			      TARG1 arg1, 
-			      unsigned int TimeoutMs, bool runOnce = true)
-{ 
-  return new cTimerFunctor1<TCLASS,TARG1>(c,fp,arg1,TimeoutMs,runOnce); 
+cTimerEvent *CreateTimerEvent(TCLASS *c, void (TCLASS::*fp)(TARG1),
+                              TARG1 arg1,
+                              unsigned int TimeoutMs, bool runOnce = true)
+{
+  return new cTimerFunctor1<TCLASS,TARG1>(c,fp,arg1,TimeoutMs,runOnce);
 }
 
 template<class TCLASS>
 void CancelTimerEvents(TCLASS *c)
-{ 
-  cTimerEvent::CancelAll((void*)c); 
+{
+  cTimerEvent::CancelAll((void*)c);
 }
 
 

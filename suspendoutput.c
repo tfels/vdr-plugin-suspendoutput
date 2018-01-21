@@ -3,7 +3,7 @@
  *
  * See the README file for copyright information and how to reach the author.
  *
- * $Id: suspendoutput.c,v 1.14 2013/08/20 08:51:06 phintuka Exp $
+ * $Id: suspendoutput.c,v 1.19 2016/06/08 19:24:15 phintuka Exp $
  */
 
 #include <getopt.h>
@@ -26,7 +26,7 @@
 #define TRACE(x...)
 
 
-static const char *VERSION         = "2.0.0";
+static const char *VERSION         = "2.0.1";
 static const char *DESCRIPTION     = trNOOP("Suspend output");
 static const char *MAINMENUENTRY1  = trNOOP("Suspend Output");
 static const char *MAINMENUENTRY2  = trNOOP("Resume Output");
@@ -35,7 +35,7 @@ static const int   INACTIVITY_TIMER_DEFAULT = 2*60*60; // 2 hours
 
 // --- cMenuSetupSuspendoutput ----------------------------------------------
 
-class cMenuSetupSuspendoutput : public cMenuSetupPage 
+class cMenuSetupSuspendoutput : public cMenuSetupPage
 {
   private:
     int timer, *ptimer;
@@ -53,27 +53,27 @@ class cMenuSetupSuspendoutput : public cMenuSetupPage
       SetupStore("ShowLogo", logo);
       cDummyPlayerControl::UseBlankImage = (logo ? false : true);
     }
-  
+
   public:
     cMenuSetupSuspendoutput(int *piTimer, bool *pbShowmenu, bool *pbPaused) :
-      timer(*piTimer / 60), ptimer(piTimer), 
+      timer(*piTimer / 60), ptimer(piTimer),
       showmenu(*pbShowmenu ? 1 : 0), pshowmenu(pbShowmenu),
       paused(*pbPaused ? 1 : 0), ppaused(pbPaused)
     {
       Add(new cMenuEditBoolItem(tr("Show in main menu"), &showmenu));
-      Add(new cMenuEditIntItem(tr("Inactivity timer (min)"), &timer, 
-			       0, 7*24*60));
+      Add(new cMenuEditIntItem(tr("Inactivity timer (min)"), &timer,
+                               0, 7*24*60));
       Add(new cMenuEditBoolItem(tr("Suspend when replay is paused"), &paused));
-      
+
       logo = ! cDummyPlayerControl::UseBlankImage;
-      Add(new cMenuEditBoolItem(tr("Show VDR logo when suspended"), 
-				&logo));
+      Add(new cMenuEditBoolItem(tr("Show VDR logo when suspended"),
+                                &logo));
     }
 };
 
 // --- cPluginSetupSuspendoutput --------------------------------------------
 
-class cPluginSuspendoutput : public cPlugin, cStatus 
+class cPluginSuspendoutput : public cPlugin, cStatus
 {
   //
   // Status monitor interface
@@ -81,16 +81,16 @@ class cPluginSuspendoutput : public cPlugin, cStatus
 
   protected:
 
-    virtual void Replaying(const cControl *Control, const char *Name, 
-			   const char *File, bool On) 
+    virtual void Replaying(const cControl *Control, const char *Name,
+                           const char *File, bool On)
     {
       if(On && Name && (strlen(Name)!=4 || strncmp("none",Name,4))) {
-	TRACE("suspendoutput: replaying -> true");
-	m_bReplaying = true;
-	Activity();
+        TRACE("suspendoutput: replaying -> true");
+        m_bReplaying = true;
+        Activity();
       } else {
-	TRACE("suspendoutput: replaying -> false");
-	m_bReplaying = false;
+        TRACE("suspendoutput: replaying -> false");
+        m_bReplaying = false;
       }
     }
 
@@ -102,11 +102,11 @@ class cPluginSuspendoutput : public cPlugin, cStatus
     virtual void OsdCurrentItem(const char *Text)            { Activity(); }
     virtual void OsdTextItem(const char *Text, bool Scroll)  { Activity(); }
     virtual void OsdChannel(const char *Text)                { Activity(); }
-    virtual void OsdProgramme(time_t PresentTime, const char *PresentTitle, 
-			      const char *PresentSubtitle, 
-			      time_t FollowingTime, 
-			      const char *FollowingTitle, 
-			      const char *FollowingSubtitle) { Activity(); }
+    virtual void OsdProgramme(time_t PresentTime, const char *PresentTitle,
+                              const char *PresentSubtitle,
+                              time_t FollowingTime,
+                              const char *FollowingTitle,
+                              const char *FollowingSubtitle) { Activity(); }
 
   //
   // Plugin interface
@@ -134,11 +134,11 @@ class cPluginSuspendoutput : public cPlugin, cStatus
     virtual void Stop(void);
     virtual void MainThreadHook(void);
     virtual void Housekeeping(void) {};
-    virtual const char *MainMenuEntry(void) 
-    { 
-      return (!m_bMenu) ? NULL : 
-	                  cDummyPlayerControl::IsOpen() ? MAINMENUENTRY2 : 
-	                                                  MAINMENUENTRY1; 
+    virtual const char *MainMenuEntry(void)
+    {
+      return (!m_bMenu) ? NULL :
+                          cDummyPlayerControl::IsOpen() ? MAINMENUENTRY2 :
+                                                          MAINMENUENTRY1;
     }
     virtual cOsdObject *MainMenuAction(void);
     virtual cMenuSetupPage *SetupMenu(void);
@@ -205,29 +205,29 @@ bool cPluginSuspendoutput::ProcessArgs(int argc, char *argv[])
     switch (c) {
     case 'm': m_bMenu = true;
               isyslog("suspendoutput: main menu entry enabled");
-	      SetupStore("MainMenu", 1);
+              SetupStore("MainMenu", 1);
               break;
     case 'M': m_bMenu = false;
               isyslog("suspendoutput: main menu entry disabled");
-	      SetupStore("MainMenu", 0);
+              SetupStore("MainMenu", 0);
               break;
     case 't': m_iInactivityTimerTimeout = atoi(optarg) * 60;
               isyslog("suspendoutput: inactivity timer set to %d minutes",
-		      m_iInactivityTimerTimeout/60);
-	      SetupStore("SuspendTimer", m_iInactivityTimerTimeout);
+                      m_iInactivityTimerTimeout/60);
+              SetupStore("SuspendTimer", m_iInactivityTimerTimeout);
               break;
     case 'T': m_iInactivityTimerTimeout = 0;
               isyslog("suspendoutput: inactivity timer disabled");
-	      SetupStore("SuspendTimer", 0);
+              SetupStore("SuspendTimer", 0);
               break;
     case 'p': m_bSuspendWhenPaused = true;
-	      SetupStore("SuspendPaused", 1);
+              SetupStore("SuspendPaused", 1);
               break;
     case 'l': cDummyPlayerControl::UseBlankImage = false;
-	      SetupStore("ShowLogo", 1);
+              SetupStore("ShowLogo", 1);
               break;
     case 'b': cDummyPlayerControl::UseBlankImage = true;
-	      SetupStore("ShowLogo", 0);
+              SetupStore("ShowLogo", 0);
               break;
     default:  return false;
     }
@@ -241,7 +241,7 @@ bool cPluginSuspendoutput::SetupParse(const char *Name, const char *Value)
   if (!strcasecmp(Name, "SuspendTimer")) {
     m_iInactivityTimerTimeout = atoi(Value);
     isyslog("suspendoutput: inactivity timer set to %d minutes",
-	    m_iInactivityTimerTimeout/60);
+            m_iInactivityTimerTimeout/60);
   } else if (!strcasecmp(Name, "MainMenu")) {
     m_bMenu = atoi(Value) ? true : false;
   } else if (!strcasecmp(Name, "SuspendPaused")) {
@@ -278,8 +278,8 @@ void cPluginSuspendoutput::CheckInactivityTimer(void)
 {
   TRACE("suspendoutput: CheckInactivityTimer");
 
-  if(m_bReplaying && 
-     m_bSuspendWhenPaused && 
+  if(m_bReplaying &&
+     m_bSuspendWhenPaused &&
      (!cDummyPlayerControl::IsOpen()) ) {
     bool Play, Forward;
     int Speed;
@@ -302,7 +302,7 @@ void cPluginSuspendoutput::CheckInactivityTimer(void)
   m_Lock.Unlock();
 
   //
-  // Perform vdr housekeeping tasks 
+  // Perform vdr housekeeping tasks
   // (vdr does not do this when player is active)
   //
   static time_t LastActivity = 0;
@@ -311,56 +311,65 @@ void cPluginSuspendoutput::CheckInactivityTimer(void)
   }
   if(cDummyPlayerControl::IsOpen()) {
 
-    if ( !cRecordControls::Active() && 
-	 !cCutter::Active() && 
-	 !Interface->HasSVDRPConnection()) {
+    if ( !cRecordControls::Active()
+#if VDRVERSNUM < 20200
+         && !cCutter::Active()
+#endif
+#if VDRVERSNUM < 20301
+         && !Interface->HasSVDRPConnection()
+#endif
+         ) {
 
 #define ACTIVITYTIMEOUT 600   // 10 min
 
       time_t Now = time(NULL);
       if (Now - LastActivity > ACTIVITYTIMEOUT) {
-	TRACE("suspendoutput: Performing housekeeping tasks...");
+        TRACE("suspendoutput: Performing housekeeping tasks...");
 #if 0
-	// TODO:
-	// add command line option --shutdown to enable this	
-	// Shutdown:
-	if (Shutdown && Setup.MinUserInactivity && 
-	    Now - LastActivity > Setup.MinUserInactivity * 60) {
-	  cTimer *timer = Timers.GetNextActiveTimer();
-	  time_t Next  = timer ? timer->StartTime() : 0;
-	  time_t Delta = timer ? Next - Now : 0;
+        // TODO:
+        // add command line option --shutdown to enable this
+        // Shutdown:
+        if (Shutdown && Setup.MinUserInactivity &&
+            Now - LastActivity > Setup.MinUserInactivity * 60) {
+          cTimer *timer = Timers.GetNextActiveTimer();
+          time_t Next  = timer ? timer->StartTime() : 0;
+          time_t Delta = timer ? Next - Now : 0;
 
-	  if (!Next || Delta > Setup.MinEventTimeout * 60) {
-	    if (timer)
-	      dsyslog("suspendoutput: next timer event at %s", 
-		      *TimeToString(Next));
-	      dsyslog("suspendoutput: trying to shutdown ...");
+          if (!Next || Delta > Setup.MinEventTimeout * 60) {
+            if (timer)
+              dsyslog("suspendoutput: next timer event at %s",
+                      *TimeToString(Next));
+              dsyslog("suspendoutput: trying to shutdown ...");
 cRemote::Put(kPower);
-	  }
-	}
+          }
+        }
 #endif
 
-	// Disk housekeeping:
-	RemoveDeletedRecordings();
-	cSchedules::Cleanup();
-	// Plugins housekeeping:
+        // Disk housekeeping:
+        RemoveDeletedRecordings();
+        cSchedules::Cleanup();
+#if VDRVERSNUM >= 20301
+        // Disk housekeeping:
+        ListGarbageCollector.Purge();
+#endif
+        // Plugins housekeeping:
 
 
-	//PluginManager.Housekeeping();
-	static int nextHousekeeping = 0;
-	//static time_t lastHousekeeping = Now;
+        //PluginManager.Housekeeping();
+        static int nextHousekeeping = 0;
+        //static time_t lastHousekeeping = Now;
         //#define HOUSEKEEPINGDELTA 10 // seconds
 
-	//if (Now - lastHousekeeping > HOUSEKEEPINGDELTA) {
-	  cPlugin *plugin = cPluginManager::GetPlugin(nextHousekeeping++);
-	  if (!plugin)
-	    cPluginManager::GetPlugin(nextHousekeeping = 0);
-	  if (plugin) 
-	    plugin->Housekeeping();
-	  //lastHousekeeping = time(NULL);
-	//}
+        //if (Now - lastHousekeeping > HOUSEKEEPINGDELTA) {
+          cPlugin *plugin = cPluginManager::GetPlugin(nextHousekeeping++);
+          if (!plugin)
+            cPluginManager::GetPlugin(nextHousekeeping = 0);
+          if (plugin)
+            plugin->Housekeeping();
+          //lastHousekeeping = time(NULL);
+        //}
 
-	TRACE("suspendoutput: Performing housekeeping tasks done.");
+        TRACE("suspendoutput: Performing housekeeping tasks done.");
       }
     }
   }
@@ -399,10 +408,9 @@ cOsdObject *cPluginSuspendoutput::MainMenuAction(void)
 
 cMenuSetupPage *cPluginSuspendoutput::SetupMenu(void)
 {
-  return new cMenuSetupSuspendoutput(&m_iInactivityTimerTimeout, 
-				     &m_bMenu, 
-				     &m_bSuspendWhenPaused);
+  return new cMenuSetupSuspendoutput(&m_iInactivityTimerTimeout,
+                                     &m_bMenu,
+                                     &m_bSuspendWhenPaused);
 }
 
 VDRPLUGINCREATOR(cPluginSuspendoutput); // Don't touch this!
-

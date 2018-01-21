@@ -46,3 +46,8 @@ VDR Plugin 'suspendoutput' Revision History
 2013-08-20: version 2.0.0
 - Removed support for vdr < 2.0.0
 - Do all actions from VDR main thread
+
+2016-06-08: Version 2.0.1
+- Fix building with vdr 2.2.0
+- Fix building with vdr 2.3.1
+

@@ -28,10 +28,10 @@
 
 class cTimerThreadEvent : public cListObject {
   public:
-    cTimerThreadEvent(cTimerCallback *Handler, unsigned int TimeoutMs, 
-		      bool DeleteOnCancel = false) :
-       m_Handler(Handler), 
-       m_DeleteOnCancel(DeleteOnCancel), 
+    cTimerThreadEvent(cTimerCallback *Handler, unsigned int TimeoutMs,
+                      bool DeleteOnCancel = false) :
+       m_Handler(Handler),
+       m_DeleteOnCancel(DeleteOnCancel),
        m_TimeoutMs(TimeoutMs)
     {
       m_NextEventTime = time_ms();
@@ -64,9 +64,9 @@ class cTimerThreadEvent : public cListObject {
     {
       const cTimerThreadEvent *o = (cTimerThreadEvent *)&ListObject;
       if(m_NextEventTime<o->m_NextEventTime)
-	return -1;
+        return -1;
       else if(m_NextEventTime>o->m_NextEventTime)
-	return 1;
+        return 1;
       return 0;
     }
 
@@ -86,7 +86,7 @@ class cTimerThread : public cThread {
 
     static cMutex        m_InstanceLock;
     static cTimerThread *m_Instance;  // singleton
-  
+
     cMutex                m_Lock;
     cCondVar              m_Signal;
     cList<cTimerThreadEvent> m_Events;
@@ -94,14 +94,14 @@ class cTimerThread : public cThread {
     bool                  m_Finished;
     bool                  m_HandlerRunning;
 
-    cTimerThread() : 
-      m_RunningEvent(NULL), 
-      m_Finished(false), 
-      m_HandlerRunning(false) 
+    cTimerThread() :
+      m_RunningEvent(NULL),
+      m_Finished(false),
+      m_HandlerRunning(false)
     {
     }
 
-    virtual ~cTimerThread() 
+    virtual ~cTimerThread()
     {
       m_Lock.Lock();
       cTimerThreadEvent *ev;
@@ -115,19 +115,19 @@ class cTimerThread : public cThread {
 
   protected:
 
-    virtual void Action() 
+    virtual void Action()
     {
       TRACEF("cTimerThread::Action");
       m_Lock.Lock();
       while(m_Events.First()) {
-        m_Signal.TimedWait(m_Lock, 
-			   max(1, m_Events.First()->TimeToNextEvent()));
+        m_Signal.TimedWait(m_Lock,
+                           max(1, m_Events.First()->TimeToNextEvent()));
         TRACE("cTimerThread::Action waked up");
-        while(NULL != (m_RunningEvent = m_Events.First()) && 
-	      m_RunningEvent->TimeToNextEvent() <= 0) {
+        while(NULL != (m_RunningEvent = m_Events.First()) &&
+              m_RunningEvent->TimeToNextEvent() <= 0) {
           TRACE("cTimerThread::Action calling handler");
           m_HandlerRunning=true;
-//        m_Lock.Unlock();   
+//        m_Lock.Unlock();
 //        - can't unlock or running timer handler may be deleted while
 //          executing (or thread may be killed by Delete)
           bool result = m_RunningEvent->m_Handler->TimerEvent();
@@ -162,14 +162,14 @@ class cTimerThread : public cThread {
       m_Events.Sort();
     }
 
-    bool Del(cTimerCallback *Handler, void *TargetId=NULL, 
-	     bool inDestructor=false)
+    bool Del(cTimerCallback *Handler, void *TargetId=NULL,
+             bool inDestructor=false)
     {
       TRACEF("cTimerThread::Del");
       cTimerThreadEvent *ev = m_Events.First();
       while(ev) {
-        if(ev->m_Handler == Handler || 
-	   (TargetId && ev->m_Handler->TargetId() == TargetId) ||
+        if(ev->m_Handler == Handler ||
+           (TargetId && ev->m_Handler->TargetId() == TargetId) ||
            (Handler && ev->m_Handler->is(Handler,Handler->size()))) {
           cTimerThreadEvent *nev = m_Events.Next(ev);
           if(inDestructor) ev->m_Handler=NULL;
@@ -178,17 +178,17 @@ class cTimerThread : public cThread {
         } else
           ev = m_Events.Next(ev);
       }
-      if(m_RunningEvent && 
-	 (m_RunningEvent->m_Handler == Handler || 
-	  m_RunningEvent->m_Handler->TargetId() == TargetId))
+      if(m_RunningEvent &&
+         (m_RunningEvent->m_Handler == Handler ||
+          m_RunningEvent->m_Handler->TargetId() == TargetId))
         m_RunningEvent = NULL;
       return !m_HandlerRunning && !m_RunningEvent && !m_Events.First();
     }
 
   public:
 
-    static void AddEvent(cTimerCallback *Handler, unsigned int TimeoutMs, 
-			 bool DeleteOnCancel=false)
+    static void AddEvent(cTimerCallback *Handler, unsigned int TimeoutMs,
+                         bool DeleteOnCancel=false)
     {
       TRACEF("cTimerThread::AddEvent");
       m_InstanceLock.Lock();
@@ -204,15 +204,15 @@ class cTimerThread : public cThread {
         m_Instance->m_Lock.Lock();
         m_Instance->m_Signal.Broadcast();
       }
-      m_Instance->Add(new cTimerThreadEvent(Handler, max(1U,TimeoutMs), 
-					    DeleteOnCancel));
+      m_Instance->Add(new cTimerThreadEvent(Handler, max(1U,TimeoutMs),
+                                            DeleteOnCancel));
       m_Instance->m_Lock.Unlock();
       m_InstanceLock.Unlock();
     }
 
-    static void CancelEvent(cTimerCallback *Handler, void *TargetId = NULL, 
-			    bool inDestructor=false) 
-    {    
+    static void CancelEvent(cTimerCallback *Handler, void *TargetId = NULL,
+                            bool inDestructor=false)
+    {
       TRACEF("cTimerThread::CancelEvent");
       m_InstanceLock.Lock();
       if(m_Instance && !m_Instance->m_Finished) {
