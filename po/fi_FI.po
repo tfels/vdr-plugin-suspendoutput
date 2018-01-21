@@ -1,0 +1,37 @@
+# VDR plugin language source file.
+# Copyright (C) 2008 Petri Hintukainen <phintuka@users.sourceforge.net>
+# This file is distributed under the same license as the vdr-suspendoutput package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Suspendoutput 1.0.0\n"
+"Report-Msgid-Bugs-To: <see README>\n"
+"POT-Creation-Date: 2012-04-16 14:55+0300\n"
+"PO-Revision-Date: 2008-10-06 11:19+0200\n"
+"Last-Translator: Petri Hintukainen\n"
+"Language-Team: <vdr@linuxtv.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Suspend output"
+msgstr "Pysäytä toisto"
+
+msgid "Suspend Output"
+msgstr "Pysäytä toisto"
+
+msgid "Resume Output"
+msgstr "Palauta toisto"
+
+msgid "Show in main menu"
+msgstr "Näytä päävalikossa"
+
+msgid "Inactivity timer (min)"
+msgstr "Ajastin (minuuttia)"
+
+msgid "Suspend when replay is paused"
+msgstr "Pysäytä myös tallenteen toiston ollessa pysäytettynä"
+
+msgid "Show VDR logo when suspended"
+msgstr "Näytä VDR-logo"

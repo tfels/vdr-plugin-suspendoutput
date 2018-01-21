@@ -1,0 +1,50 @@
+This is a "plugin" for the Video Disk Recorder (VDR).
+
+Written by:                  Petri Hintukainen <phintuka@users.sourceforge.net>
+
+Project's homepage:          http://phivdr.dyndns.org/vdr/
+
+Latest version available at: http://phivdr.dyndns.org/vdr/
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+See the file COPYING for more information.
+
+Description:
+
+   Suspend vdr output (display still image instead of live video).
+
+   Suspending live TV releases current channel (DVB card) for 
+   recording(s) and saves some CPU time with software decoders.
+
+   Blanking display while replay is paused can avoid burning the 
+   image on tube.
+
+
+Options:
+
+   -m        --menu         Show suspend/resume entry in main menu (default)
+   -M        --nomenu       Don't show entry in main menu
+   -t MIN    --timer=MIN    Suspend output after MIN minutes of inactivity
+                            (default: 120 minutes)
+   -T        --notimer      Disable inactivity timer
+   -p        --paused       Allow timer to suspend output when replay 
+                            is paused
+   -l        --logo         Show VDR logo when suspended
+   -b        --blank        Blank screen when suspended
+
+
+Public CVS
+
+  Latest fixes are available from sourceforge.net public CVS
+  (http://sourceforge.net/cvs/?group_id=160063).
+
+  CVS checkout command:
+  cvs -d:pserver:anonymous@xineliboutput.cvs.sourceforge.net:/cvsroot/xineliboutput co vdr-suspendoutput
+
+
+VDR Logo
+
+   The VDR logo was designed by Jan Grell.
