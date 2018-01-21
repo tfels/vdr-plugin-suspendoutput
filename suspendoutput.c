@@ -3,7 +3,7 @@
  *
  * See the README file for copyright information and how to reach the author.
  *
- * $Id: suspendoutput.c,v 1.19 2016/06/08 19:24:15 phintuka Exp $
+ * $Id: suspendoutput.c,v 1.23 2016/12/31 20:26:54 phintuka Exp $
  */
 
 #include <getopt.h>
@@ -26,7 +26,7 @@
 #define TRACE(x...)
 
 
-static const char *VERSION         = "2.0.1";
+static const char *VERSION         = "2.1.0";
 static const char *DESCRIPTION     = trNOOP("Suspend output");
 static const char *MAINMENUENTRY1  = trNOOP("Suspend Output");
 static const char *MAINMENUENTRY2  = trNOOP("Resume Output");
@@ -121,6 +121,7 @@ class cPluginSuspendoutput : public cPlugin, cStatus
     bool m_bSuspendWhenPaused;
     cMutex m_Lock;
     time_t m_Timer;
+    enum { REQ_NONE = 0, REQ_SUSPEND, REQ_RESUME } m_SvcReq;  // Pending request from service interface
 
   public:
     cPluginSuspendoutput(void);
@@ -140,9 +141,16 @@ class cPluginSuspendoutput : public cPlugin, cStatus
                           cDummyPlayerControl::IsOpen() ? MAINMENUENTRY2 :
                                                           MAINMENUENTRY1;
     }
+
+ protected:
     virtual cOsdObject *MainMenuAction(void);
     virtual cMenuSetupPage *SetupMenu(void);
     virtual bool SetupParse(const char *Name, const char *Value);
+
+    virtual bool Service(const char *Id, void *Data);
+
+    virtual const char **SVDRPHelpPages(void);
+    virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode);
 
   //
   // internal
@@ -163,6 +171,7 @@ cPluginSuspendoutput::cPluginSuspendoutput(void)
   m_bPlayerLaunchedByTimer = false;
   m_bSuspendWhenPaused = false;
   m_Timer = 0;
+  m_SvcReq = REQ_NONE;
 }
 
 cPluginSuspendoutput::~cPluginSuspendoutput()
@@ -272,6 +281,34 @@ void cPluginSuspendoutput::MainThreadHook(void)
       CheckInactivityTimer();
     m_Timer = now;
   }
+
+  /* handle service requests */
+  m_Lock.Lock();
+
+  switch (m_SvcReq) {
+    case REQ_RESUME:
+      isyslog("suspendoutput: resuming (service request)");
+      cDummyPlayerControl::Close();
+      break;
+
+    case REQ_SUSPEND:
+      if (cDummyPlayerControl::IsOpen()) {
+        isyslog("suspendoutput: service request SUSPEND ignored (already suspended)");
+      } else if (m_bReplaying) {
+        isyslog("suspendoutput: service request SUSPEND ignored (replaying)");
+      } else {
+        isyslog("suspendoutput: suspending (service request)");
+        cControl::Launch(new cDummyPlayerControl);
+      }
+      break;
+
+    case REQ_NONE:
+    default:
+      break;
+  }
+  m_SvcReq = REQ_NONE;
+
+  m_Lock.Unlock();
 }
 
 void cPluginSuspendoutput::CheckInactivityTimer(void)
@@ -411,6 +448,74 @@ cMenuSetupPage *cPluginSuspendoutput::SetupMenu(void)
   return new cMenuSetupSuspendoutput(&m_iInactivityTimerTimeout,
                                      &m_bMenu,
                                      &m_bSuspendWhenPaused);
+}
+
+/*
+ * SVDRP interface
+ */
+
+const char **cPluginSuspendoutput::SVDRPHelpPages(void)
+{
+  static const char *HelpPages[] = {
+    "SUSPEND\n"
+    "    Suspend output (video playback).",
+    "RESUME\n"
+    "    Resume output.\n",
+    "STATUS\n"
+    "    Query current suspend status.\n",
+    NULL
+  };
+  return HelpPages;
+}
+
+cString cPluginSuspendoutput::SVDRPCommand(const char *Command, const char *Option, int &ReplyCode)
+{
+  if (strcasecmp(Command, "SUSPEND") == 0) {
+    m_Lock.Lock();
+    m_SvcReq = REQ_SUSPEND;
+    m_Lock.Unlock();
+    return cString("Suspend request queued");
+
+  } else if (strcasecmp(Command, "RESUME") == 0) {
+    m_Lock.Lock();
+    m_SvcReq = REQ_RESUME;
+    m_Lock.Unlock();
+    return cString("Resume request queued");
+
+  } else if (strcasecmp(Command, "STATUS") == 0) {
+    bool suspended = cDummyPlayerControl::IsOpen();
+    return cString::sprintf("Output is %ssuspended", suspended ? "" : "not ");
+  }
+
+  return NULL;
+}
+
+/*
+ * Service interface
+ */
+
+bool cPluginSuspendoutput::Service(const char *Id, void *Data)
+{
+  if (!strcmp(Id, "SuspendOutputPlugin-v1.0")) {
+    if (Data) {
+      const char *cmd = (const char *)Data;
+      if (!strcmp(cmd, "Suspend")) {
+        dsyslog("suspendoutput: suspend requested by service");
+        m_Lock.Lock();
+        m_SvcReq = REQ_SUSPEND;
+        m_Lock.Unlock();
+        return true;
+      }
+      if (!strcmp(cmd, "Resume")) {
+        dsyslog("suspendoutput: resume requested by service");
+        m_Lock.Lock();
+        m_SvcReq = REQ_RESUME;
+        m_Lock.Unlock();
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 VDRPLUGINCREATOR(cPluginSuspendoutput); // Don't touch this!

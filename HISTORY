@@ -51,3 +51,6 @@ VDR Plugin 'suspendoutput' Revision History
 - Fix building with vdr 2.2.0
 - Fix building with vdr 2.3.1
 
+2016-12-31: Version 2.1.0
+- Added service interface
+- Added SVDRP interface
